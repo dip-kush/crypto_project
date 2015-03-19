@@ -1,11 +1,11 @@
 #include<stdio.h>
 #include<stdlib.h>
-
+#include<assert.h>
+#include<math.h>
 
 #define BASE 10
 
-int N = 128;
-
+#define N 128
 
 void make_int (int A[], int n) {
 	int	i;
@@ -65,7 +65,6 @@ void increment (int A[]) {
 	}
 }
 
-/* C = A + B */
 void add (int A[], int B[], int C[]) {
 	int	i, carry, sum;
 
@@ -107,8 +106,6 @@ void add (int A[], int B[], int C[]) {
 	if (carry) printf ("overflow in addition!\n");
 }
 
-
-/* C = A * B */
 void multiply (int A[], int B[], int C[]) {
 	int	i, j, P[N];
 
@@ -133,7 +130,7 @@ void multiply (int A[], int B[], int C[]) {
 	}
 }
 
-/* B = n * A */
+
 void multiply_one_digit (int A[], int B[], int n) {
 	int	i, carry;
 
@@ -171,7 +168,6 @@ void multiply_one_digit (int A[], int B[], int n) {
 }
 
 
-/* "multiplies" a number by BASEn */
 void shift_left (int A[], int n) {
 	int	i;
 
@@ -185,10 +181,26 @@ void shift_left (int A[], int n) {
 	while (i >= 0) A[i--] = 0;
 }
 
+int mul_inv(int a, int b)
+{
+        int t, nt, r, nr, q, tmp;
+        if (b < 0) b = -b;
+        if (a < 0) a = b - (-a % b);
+        t = 0;  nt = 1;  r = b;  nr = a % b;
+        while (nr != 0) {
+          q = r/nr;
+          tmp = nt;  nt = t - q*nt;  t = tmp;
+            printf("%d %d %d\n", nt, t, q );
+          tmp = nr;  nr = r - q*nr;  r = tmp;
+            printf("%d %d %d\n", nr, r, q );
+        }
+        if (r > 1) return -1;  /* No inverse */
+        if (t < 0) t += b;
+        return t;
+}
+
+int main(int argc , char *argv[]){
 
 
-
-int main(){
-
-return 0;
+	return 0;
 }
