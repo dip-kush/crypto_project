@@ -181,6 +181,53 @@ void shift_left (int A[], int n) {
 	while (i >= 0) A[i--] = 0;
 }
 
+int enhanced_euclid(int p0, int p1){
+	int temp;
+	int l,m,t,s,tos,flag=0,i,b=0;
+	l=p0;
+	m=p1;
+	int stack[100];
+	tos=0;
+	do{
+		t = l/m;
+		stack[tos++]=t;
+		s = l - m*t;
+		b=1-b;
+		l=m;
+		m=s;
+		if(s==0){
+			flag=1;
+			break;
+		}
+
+		
+	}while(s!=1);
+		
+	if(flag){
+		printf("Inverse doesn\'t exist\n");
+		return -1;
+	}
+	
+	if(b==0)
+		m=1;
+	else
+		m=-1;
+	s=0;
+	printf("m %d \n",m );
+	for(i=tos-1;i>=0;i--){
+	
+		l = m*stack[i]+s;
+		s=m;
+		m=l;
+		printf(" s %d   m %d   stack %d \n",s,m, stack[i]);
+	}
+	return l;	
+
+
+}
+
+
+
 int mul_inv(int a, int b)
 {
         int t, nt, r, nr, q, tmp;
@@ -190,17 +237,24 @@ int mul_inv(int a, int b)
         while (nr != 0) {
           q = r/nr;
           tmp = nt;  nt = t - q*nt;  t = tmp;
-            printf("%d %d %d\n", nt, t, q );
+          //  printf("%d %d %d\n", nt, t, q );
           tmp = nr;  nr = r - q*nr;  r = tmp;
-            printf("%d %d %d\n", nr, r, q );
+           // printf("%d %d %d\n", nr, r, q );
         }
         if (r > 1) return -1;  /* No inverse */
         if (t < 0) t += b;
         return t;
 }
 
+
+
+
 int main(int argc , char *argv[]){
+ 	printf("%d\n", mul_inv(4 , 5));
+	printf("%d\n", enhanced_euclid(5, 9));
+		printf("%d\n", enhanced_euclid(5, 4));
 
-
+//	printf("%d\n", enhanced_euclid(9, 7));
+//	printf("%d\n", enhanced_euclid(31415926, 27182845));
 	return 0;
 }
