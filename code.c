@@ -2,10 +2,32 @@
 #include<stdlib.h>
 #include<assert.h>
 #include<math.h>
+#include<string.h>
 
 #define BASE 10
-
 #define N 128
+#define rep(i,n) for(i=0;i<n;i++)
+
+#define POSITIVE 1
+#define NEGATIVE 0
+
+struct BigInteger{
+	int digits[N];
+	int sign;
+	int length;
+};
+
+typedef struct BigInteger BigInteger;
+
+BigInteger init(){
+	int i;
+	BigInteger c;
+	rep(i, N)
+		c.digits[i]=0;
+	c.sign = 1;
+	c.length = 0;
+	return c;
+}
 
 void make_int (int A[], int n) {
 	int	i;
@@ -34,6 +56,7 @@ void make_int (int A[], int n) {
 
 	while (i < N) A[i++] = 0;
 }
+
 
 
 void increment (int A[]) {
@@ -65,9 +88,11 @@ void increment (int A[]) {
 	}
 }
 
-void add (int A[], int B[], int C[]) {
+BigInteger add (BigInteger A, BigInteger B) {
+
 	int	i, carry, sum;
 
+	BigInteger C = init();
 	/* no carry yet */
 
 	carry = 0;
@@ -79,7 +104,7 @@ void add (int A[], int B[], int C[]) {
 		/* the i'th digit of C is the sum of the
 		 * i'th digits of A and B, plus any carry
 		 */
-		sum = A[i] + B[i] + carry;
+		sum = A.digits[i] + B.digits[i] + carry;
 
 		/* if the sum exceeds the base, then we have a carry. */
 
@@ -97,13 +122,21 @@ void add (int A[], int B[], int C[]) {
 
 		/* put the result in the sum */
 
-		C[i] = sum;
+		C.digits[i] = sum;
 	}
 
+	rep(i, N)
+		if(C.digits[N-1-i]!=0)
+			break;
+
+	C.length = N - i;
+	rep(i, N)
+
+	return C;
 	/* if we get to the end and still have a carry, we don't have
 	 * anywhere to put it, so panic! 
 	 */
-	if (carry) printf ("overflow in addition!\n");
+	if (carry){ printf ("overflow in addition!\n"); return C;}
 }
 
 void multiply (int A[], int B[], int C[]) {
@@ -126,7 +159,7 @@ void multiply (int A[], int B[], int C[]) {
 
 		/* add result to the running sum */
 
-		add (C, P, C);
+		//add (C, P, C);
 	}
 }
 
@@ -247,14 +280,70 @@ int mul_inv(int a, int b)
 }
 
 
-
+int * intdup(int const * src, int *dest, size_t len)
+{
+   int * p = malloc(len * sizeof(int));
+   memcpy(p, src, len * sizeof(int));
+   return p;
+}
 
 int main(int argc , char *argv[]){
- 	printf("%d\n", mul_inv(4 , 5));
-	printf("%d\n", enhanced_euclid(5, 9));
-		printf("%d\n", enhanced_euclid(5, 4));
+
+
+// 	printf("%d\n", mul_inv(4 , 5));
+//	printf("%d\n", enhanced_euclid(5, 9));
+//	printf("%d\n", enhanced_euclid(5, 4));
 
 //	printf("%d\n", enhanced_euclid(9, 7));
 //	printf("%d\n", enhanced_euclid(31415926, 27182845));
+	int i;
+	BigInteger result;
+	BigInteger d1, d2;
+	int len_d1, len_d2, len_r;
+	int dig1_int[N], dig2_int[N];
+	int sign_dig1=1,sign_dig2=1;
+
+	char dig1[] = "12342545454545212154";
+
+	char dig2[] = "1111111111255454554545445454";
+
+	len_d1 = strlen(dig1);
+
+	len_d2 = strlen(dig2);
+	
+	rep(i,N)
+		dig1_int[i]=0;
+
+	rep(i,N)
+		dig2_int[i]=0;	
+
+
+	rep(i, len_d1){
+		dig1_int[i] = dig1[len_d1-i-1] - '0';
+	}
+
+	rep(i, len_d2){
+		dig2_int[i] = dig2[len_d2-i-1] - '0';
+	}
+
+	d1.sign = sign_dig1;
+	d1.sign = sign_dig2;
+
+	d1.length = len_d1;
+	d2.length = len_d2;
+
+	memcpy(d1.digits , dig1_int, N*sizeof(int));
+	memcpy(d2.digits , dig2_int, N*sizeof(int));
+
+	result = add(d1, d2);
+
+	//rep(i, N)
+	//	result.digits[i]=0;
+	len_r = result.length;
+	rep(i, len_r)
+		printf("%d", result.digits[len_r-1-i]);
+	printf("\n");
+	printf("%d\n", result.length );
+
 	return 0;
 }
