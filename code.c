@@ -88,7 +88,7 @@ void increment (int A[]) {
 	}
 }
 
-bool check_max(BigInteger A, BigInteger B){
+int check_max(BigInteger A, BigInteger B){
 
 	int i;
 
