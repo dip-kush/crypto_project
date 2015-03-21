@@ -88,6 +88,68 @@ void increment (int A[]) {
 	}
 }
 
+bool check_max(BigInteger A, BigInteger B){
+
+	int i;
+
+	for(i=N-1; i>=0; i--) {
+		if(A.digits[i]>B.digits[i]){
+			return 1;
+		}
+		else if(A.digits[i]==B.digits[i])
+			continue;
+		else
+			return 0;
+	}
+
+	return 1;
+}
+
+
+
+
+
+BigInteger subtract( BigInteger A, BigInteger B){ // const BigIntegerData left, const BigIntegerData right )
+
+  	BigInteger C = init();
+
+  	int i = 0 , diff;
+
+  	int borrow = 0;
+
+  	for(i = 0; i < N; i++) {
+
+  		diff  = A.digits[i] - B.digits[i] + borrow;
+
+  		//printf("%d",diff);
+  		if(diff < 0){
+  			diff+=BASE;
+
+  			borrow = 1;
+
+  		}else{
+
+  			borrow = 0;
+
+  		}
+
+  		C.digits[i] = diff;
+
+
+  	}
+
+  	rep(i, N)
+		if(C.digits[N-1-i]!=0)
+			break;
+	C.length = N - i;
+	
+	if(N-i == 0)
+		C.length = 1;
+
+    return C;
+}
+
+
 BigInteger add (BigInteger A, BigInteger B) {
 
 	int	i, carry, sum;
@@ -130,7 +192,7 @@ BigInteger add (BigInteger A, BigInteger B) {
 			break;
 
 	C.length = N - i;
-	rep(i, N)
+	//rep(i, N)
 
 	return C;
 	/* if we get to the end and still have a carry, we don't have
@@ -139,28 +201,38 @@ BigInteger add (BigInteger A, BigInteger B) {
 	if (carry){ printf ("overflow in addition!\n"); return C;}
 }
 
-void multiply (int A[], int B[], int C[]) {
-	int	i, j, P[N];
 
+BigInteger divide(BigInteger A, BigInteger B) {
+
+
+}
+
+BigInteger multiply (BigInteger A, BigInteger B) {
+	int	i, j;
+	BigInteger P = init();	
+
+	BigInteger C = init();
 	/* C will accumulate the sum of partial products.  It's initially 0. */
 
-	make_int (C, 0);
+ 	//make_int (C, 0);
 
 	/* for each digit in A... */
 
 	for (i=0; i<N; i++) {
 		/* multiply B by digit A[i] */
 
-		multiply_one_digit (B, P, A[i]);
+		multiply_one_digit (B.digits,  P.digits , A.digits[i]);
 
 		/* shift the partial product left i bytes */
 
-		shift_left (P, i);
+		shift_left (P.digits, i);
 
 		/* add result to the running sum */
 
-		//add (C, P, C);
+		C = add (C, P);
 	}
+
+	return C;
 }
 
 
@@ -191,12 +263,14 @@ void multiply_one_digit (int A[], int B[], int n) {
 
 			carry = B[i] / BASE;
 			B[i] %= BASE;
-		} else
+		} 
+		else
 
 			/* no overflow */
 
 			carry = 0;
 	}
+
 	if (carry) printf ("overflow in multiplication!\n");
 }
 
@@ -303,9 +377,9 @@ int main(int argc , char *argv[]){
 	int dig1_int[N], dig2_int[N];
 	int sign_dig1=1,sign_dig2=1;
 
-	char dig1[] = "12342545454545212154";
+	char dig1[] = "777777";
 
-	char dig2[] = "1111111111255454554545445454";
+	char dig2[] = "111111";
 
 	len_d1 = strlen(dig1);
 
@@ -335,7 +409,9 @@ int main(int argc , char *argv[]){
 	memcpy(d1.digits , dig1_int, N*sizeof(int));
 	memcpy(d2.digits , dig2_int, N*sizeof(int));
 
-	result = add(d1, d2);
+	//result = add(d1, d2);
+	//result = multiply(d1, d2);
+	result = subtract(d1, d2);
 
 	//rep(i, N)
 	//	result.digits[i]=0;
@@ -344,6 +420,6 @@ int main(int argc , char *argv[]){
 		printf("%d", result.digits[len_r-1-i]);
 	printf("\n");
 	printf("%d\n", result.length );
-
+	 
 	return 0;
 }
