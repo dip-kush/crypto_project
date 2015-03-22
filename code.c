@@ -6,6 +6,7 @@
 
 #define BASE 10
 #define N 128
+
 #define rep(i,n) for(i=0;i<n;i++)
 
 #define POSITIVE 1
@@ -25,7 +26,7 @@ BigInteger init(){
 	rep(i, N)
 		c.digits[i]=0;
 	c.sign = 1;
-	c.length = 0;
+	c.length = 1;
 	return c;
 }
 
@@ -102,14 +103,21 @@ int check_max(BigInteger A, BigInteger B){
 			return 0;
 	}
 
-	return 1;
+	return 2;
 }
 
 
 
 
 
+
+
 BigInteger subtract( BigInteger A, BigInteger B){ // const BigIntegerData left, const BigIntegerData right )
+
+	int boo = check_max(A, B);
+	if(!boo){
+		printf("Invalid Subtraction\n");
+	}	
 
   	BigInteger C = init();
 
@@ -187,7 +195,7 @@ BigInteger add (BigInteger A, BigInteger B) {
 		C.digits[i] = sum;
 	}
 
-	rep(i, N)
+ 	rep(i, N)
 		if(C.digits[N-1-i]!=0)
 			break;
 
@@ -202,9 +210,55 @@ BigInteger add (BigInteger A, BigInteger B) {
 }
 
 
-BigInteger divide(BigInteger A, BigInteger B) {
+
+BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
+	int i,j,m,n,num,k=0,l;
+	BigInteger P = init();	
+	C[0] = init();
+	C[1] = init();
+	//BigInteger C[1] = init();
+	int boo = check_max(A, B);
+
+	for(i=N-1;i>=0,A.digits[i]==0;i--);
+
+	for(j=N-1;j>=0,B.digits[j]==0;j--);
+		
+	n = i;
+	m = j;
+
+	
+
+	printf("m %d n  %d\n", m+1 , n+1 );
+	n++;
+	k=0;
+	l=0;
+	if(m==0){
+		 for(i=n;i>=1;i--){	
+			num = A.digits[i]*10 + A.digits[i-1];
+			A.digits[i-1] = num%B.digits[m];
+			C[0].digits[k++] = num/B.digits[m];
+		 }
+		 if(A.digits[0] >= B.digits[m])	{
+		    C[0].digits[k++] = A.digits[0]/B.digits[m];
+		    C[1].digits[0] = A.digits[0]%B.digits[m];
+		 }
+		 else{
+		 	C[1].digits[0] = A.digits[0];
+		 }   	
+		 C[0].length = k;
+ 
+	 }
+	 else if(m>n){
+	 	for(i=n-1;i>=0;i--)
+	 		C[1].digits[l++]=A.digits[i];
+	 	C[1].length = l;	
+	 }
+
+	
 
 
+
+	//return C;
 }
 
 BigInteger multiply (BigInteger A, BigInteger B) {
@@ -372,14 +426,17 @@ int main(int argc , char *argv[]){
 //	printf("%d\n", enhanced_euclid(31415926, 27182845));
 	int i;
 	BigInteger result;
+	BigInteger qr[2];
+	qr[0] = init();
+	qr[1] = init();
 	BigInteger d1, d2;
-	int len_d1, len_d2, len_r;
+	int len_d1, len_d2, len_r, len_q;
 	int dig1_int[N], dig2_int[N];
 	int sign_dig1=1,sign_dig2=1;
 
-	char dig1[] = "777777";
+	char dig1[] = "45154548787";
 
-	char dig2[] = "111111";
+	char dig2[] = "545454545454545454";
 
 	len_d1 = strlen(dig1);
 
@@ -411,15 +468,31 @@ int main(int argc , char *argv[]){
 
 	//result = add(d1, d2);
 	//result = multiply(d1, d2);
-	result = subtract(d1, d2);
-
+	//result = subtract(d1, d2);
 	//rep(i, N)
 	//	result.digits[i]=0;
-	len_r = result.length;
+	/*len_r = result.length;
 	rep(i, len_r)
 		printf("%d", result.digits[len_r-1-i]);
 	printf("\n");
 	printf("%d\n", result.length );
+*/
+	knuth_divide(d1, d2, qr);
+	result = qr[0];
+	//printf("%d\n",qr[0].digits[0] );
+	len_q = result.length;
+	printf("%d\n", len_q);
+
+	rep(i, len_q)
+		printf("%d",result.digits[i]);
+	printf("\n");
+
+	len_r = qr[1].length;
+	rep(i, len_r)
+		printf("%d",qr[1].digits[i]);
+	printf("\n");
+	//int b = check_max(d1, d2);
+	//printf(" max result %d\n",b);
 	 
 	return 0;
 }
