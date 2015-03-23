@@ -12,6 +12,7 @@
 #define POSITIVE 1
 #define NEGATIVE 0
 
+
 struct BigInteger{
 	int digits[N];
 	int sign;
@@ -19,6 +20,7 @@ struct BigInteger{
 };
 
 typedef struct BigInteger BigInteger;
+
 
 BigInteger init(){
 	int i;
@@ -29,6 +31,7 @@ BigInteger init(){
 	c.length = 1;
 	return c;
 }
+
 
 void make_int (int A[], int n) {
 	int	i;
@@ -157,6 +160,22 @@ BigInteger subtract( BigInteger A, BigInteger B){ // const BigIntegerData left, 
     return C;
 }
 
+BigInteger invert(BigInteger A, int offset){
+	int i;
+	BigInteger I = init();
+	I.length = A.length+offset;
+	rep(i, A.length)
+		I.digits[i+offset]=A.digits[A.length-1-i];
+	return I;
+}
+
+
+BigInteger get_copy(BigInteger A){
+	BigInteger C = init();
+	C.length = A.length;
+	memcpy(C.digits, A.digits, 128*sizeof(int));
+	return C;	
+}
 
 BigInteger add (BigInteger A, BigInteger B) {
 
@@ -209,11 +228,32 @@ BigInteger add (BigInteger A, BigInteger B) {
 	if (carry){ printf ("overflow in addition!\n"); return C;}
 }
 
+void print_the_integer(BigInteger A){
+	int i;
+	rep(i, A.length){
+		printf("%d",A.digits[i]);
+	}
+	printf("\n");
+}
 
+void print_full_integer(BigInteger A){
+	int i;
+	rep(i, 128){
+		printf("%d",A.digits[i]);
+	}
+	printf("\n");
+}
 
 BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	int i,j,m,n,num,k=0,l;
-	BigInteger P = init();	
+	BigInteger P = init();
+	BigInteger R = init();
+	
+	BigInteger ten = init();
+	ten.length = 2;
+	ten.digits[0] = 0;
+	ten.digits[1] = 1;
+
 	C[0] = init();
 	C[1] = init();
 	//BigInteger C[1] = init();
@@ -252,6 +292,22 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 	for(i=n-1;i>=0;i--)
 	 		C[1].digits[l++]=A.digits[i];
 	 	C[1].length = l;	
+	 }
+	 else{
+	 	printf("iamhere\n");
+	 	BigInteger I = invert(A,1);
+	 	print_full_integer(I);
+	 	for(i=0;i<=n-m;i++){
+	 		P = init();
+	 		memcpy(P.digits, I.digits+i, sizeof(int)*(m+1));
+	 		P.length = m+1;
+	 		R = invert(P, 0);	
+	 		//print_full_integer(R);
+
+	 	}	
+
+
+
 	 }
 
 	
@@ -434,9 +490,9 @@ int main(int argc , char *argv[]){
 	int dig1_int[N], dig2_int[N];
 	int sign_dig1=1,sign_dig2=1;
 
-	char dig1[] = "45154548787";
+	char dig1[] = "123456789";
 
-	char dig2[] = "545454545454545454";
+	char dig2[] = "12";
 
 	len_d1 = strlen(dig1);
 
@@ -477,8 +533,10 @@ int main(int argc , char *argv[]){
 	printf("\n");
 	printf("%d\n", result.length );
 */
+
+
 	knuth_divide(d1, d2, qr);
-	result = qr[0];
+/*	result = qr[0];
 	//printf("%d\n",qr[0].digits[0] );
 	len_q = result.length;
 	printf("%d\n", len_q);
@@ -491,8 +549,14 @@ int main(int argc , char *argv[]){
 	rep(i, len_r)
 		printf("%d",qr[1].digits[i]);
 	printf("\n");
+*/
+
 	//int b = check_max(d1, d2);
 	//printf(" max result %d\n",b);
-	 
+
+	//BigInteger C = get_copy(d1);
+	//rint_full_integer(C);
+	//BigInteger I = invert(d1);
+	//print_full_integer(I);
 	return 0;
 }
