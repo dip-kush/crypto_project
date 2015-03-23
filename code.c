@@ -244,16 +244,47 @@ void print_full_integer(BigInteger A){
 	printf("\n");
 }
 
+BigInteger multiply (BigInteger A, BigInteger B) {
+	int	i, j;
+	BigInteger P = init();	
+
+	BigInteger C = init();
+	/* C will accumulate the sum of partial products.  It's initially 0. */
+
+ 	//make_int (C, 0);
+
+	/* for each digit in A... */
+
+	for (i=0; i<N; i++) {
+		/* multiply B by digit A[i] */
+
+		multiply_one_digit (B.digits,  P.digits , A.digits[i]);
+
+		/* shift the partial product left i bytes */
+
+		shift_left (P.digits, i);
+
+		/* add result to the running sum */
+
+		C = add (C, P);
+	}
+
+	return C;
+}
+
+
 BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	int i,j,m,n,num,k=0,l;
 	BigInteger P = init();
 	BigInteger R = init();
+	BigInteger T = init();
+	BigInteger REM = init();
 	
 	BigInteger ten = init();
 	ten.length = 2;
 	ten.digits[0] = 0;
 	ten.digits[1] = 1;
-
+	//print_full_integer(ten);
 	C[0] = init();
 	C[1] = init();
 	//BigInteger C[1] = init();
@@ -294,14 +325,34 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 	C[1].length = l;	
 	 }
 	 else{
+	 	int div_first_digit, qt;
 	 	printf("iamhere\n");
 	 	BigInteger I = invert(A,1);
 	 	print_full_integer(I);
 	 	for(i=0;i<=n-m;i++){
 	 		P = init();
+	 		R = init();
+	 		REM = init();
+	 		T = init();
 	 		memcpy(P.digits, I.digits+i, sizeof(int)*(m+1));
 	 		P.length = m+1;
-	 		R = invert(P, 0);	
+	 		//printf("%d\n", P.length);
+	 		R = invert(P, 0);
+	 		// ------added at graphics lab----------------
+	 		num = P.digits[m]*10 + P.digits[m-1];
+			div_first_digit = B.digits[m-1];
+			qt = num / div_first_digit;
+			BigInteger QT = init();
+			QT.digits[0] = qt; 
+			T = multiply(B, QT);
+			while(!check_max(R , T)){						
+				T = subtract(T, B);
+				qt-=1;
+			}
+			C[0].digits[k++] = qt;
+			REM = subtract(R,T);			
+			print_full_integer(REM);			
+			// ------- not sure whether it will work or not----------- 			
 	 		//print_full_integer(R);
 
 	 	}	
@@ -317,33 +368,6 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	//return C;
 }
 
-BigInteger multiply (BigInteger A, BigInteger B) {
-	int	i, j;
-	BigInteger P = init();	
-
-	BigInteger C = init();
-	/* C will accumulate the sum of partial products.  It's initially 0. */
-
- 	//make_int (C, 0);
-
-	/* for each digit in A... */
-
-	for (i=0; i<N; i++) {
-		/* multiply B by digit A[i] */
-
-		multiply_one_digit (B.digits,  P.digits , A.digits[i]);
-
-		/* shift the partial product left i bytes */
-
-		shift_left (P.digits, i);
-
-		/* add result to the running sum */
-
-		C = add (C, P);
-	}
-
-	return C;
-}
 
 
 void multiply_one_digit (int A[], int B[], int n) {
@@ -523,7 +547,8 @@ int main(int argc , char *argv[]){
 	memcpy(d2.digits , dig2_int, N*sizeof(int));
 
 	//result = add(d1, d2);
-	//result = multiply(d1, d2);
+	result = multiply(d1, d2);
+	
 	//result = subtract(d1, d2);
 	//rep(i, N)
 	//	result.digits[i]=0;
@@ -535,7 +560,7 @@ int main(int argc , char *argv[]){
 */
 
 
-	knuth_divide(d1, d2, qr);
+	//knuth_divide(d1, d2, qr);
 /*	result = qr[0];
 	//printf("%d\n",qr[0].digits[0] );
 	len_q = result.length;
