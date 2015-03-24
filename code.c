@@ -328,6 +328,15 @@ BigInteger multiply (BigInteger A, BigInteger B) {
 	return C;
 }
 
+int find_len(BigInteger A){
+	int i;
+	for(i=N-1;i>=0;i--){
+		if(A.digits[i]!=0){
+//			printf("len %d\n", i+1 );
+			return i+1;
+		}		
+	}
+}
 
 BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	int i,j,m,n,num,k=0,l;
@@ -373,6 +382,7 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 		 	C[1].digits[0] = A.digits[0];
 		 }   	
 		 C[0].length = k;
+		 C[0] = invert(C[0], 0);
  
 	 }
 	 else if(m>n){
@@ -382,7 +392,7 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 }
 	 else{
 	 	int div_first_digit, qt;
-	 	//printf("iamhere\n");
+	 	//printf("m ==   %d\n",m );
 	 	BigInteger I = invert(A,1);
 //	 	print_full_integer(I);
 	 	for(i=0;i<n-m;i++){
@@ -396,18 +406,20 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 		P.length = m+2;
 	 		//printf("%d\n", P.length);
 	 		R = invert(P, 0);
-//	 		printf("R  \t");
-//	 		print_full_integer(R);
+	 	//	printf("R  \t");
+	 	//	print_the_integer(R);
 
 	 		// ------added at graphics lab----------------
-	 		num = P.digits[m] + P.digits[m-1]*10;
+	 	//	print_full_integer(P);
+	 		num = P.digits[1] + P.digits[0]*10;
 	 	//	printf("num =%d\n",num);
 	 	//	printf("%d\n", m );
 			div_first_digit = B.digits[m];
 		//	print_full_integer(B);
 		//	printf("first_digit %d\n",div_first_digit);
 			qt = num / div_first_digit;
-		//	printf("qt %d\n",qt );
+			//printf("num %d\n",num );
+			//printf("qt %d\n",qt );
 			BigInteger QT = init();
 			QT.digits[0] = qt; 
 		//	print_full_integer(QT);
@@ -434,13 +446,25 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 	//	print_full_integer(R);
 
 	 	}	
-	 	print_full_integer(C[0]);
-	 	print_full_integer(REM);
+
+	 //	print_full_integer(C[0]);
+ 	 	//C[0] = invert(C[0], 0);
+ 	 	C[0].length = k;
+ 	 	C[0] = invert(C[0], 0);
+ 	 	
+	 	//print_full_integer(C[0]);
+	 	//C[0].length = find_len(C[0]);
+	 	C[1] = REM;
+//		C[1].length = find_len(REM);
 
 
 
 	 }
 
+		printf(" Quotient \n"); 	
+	 	print_the_integer(C[0]);
+	 	printf(" Remainder \n");
+	 	print_the_integer(C[1]);
 	
 
 
@@ -594,12 +618,14 @@ int main(int argc , char *argv[]){
 	int len_d1, len_d2, len_r, len_q;
 	int dig1_int[N], dig2_int[N];
 	
-	char dig1[] = "425987";
+	char dig1[] = "454545454121212121212121254545454878787";
 
-	char dig2[] = "56";
+	char dig2[] = "1";
 
-	len_d1 = strlen(dig1);
-
+/*	char dig1[] = "124578";
+	char dig2[] = "45";
+*/	len_d1 = strlen(dig1);
+//3274740005
 	len_d2 = strlen(dig2);
 	
 	rep(i,N)
