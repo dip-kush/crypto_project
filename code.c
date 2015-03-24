@@ -13,13 +13,21 @@
 #define NEGATIVE 0
 
 
+
 struct BigInteger{
 	int digits[N];
 	int sign;
 	int length;
 };
 
+
+
 typedef struct BigInteger BigInteger;
+
+BigInteger add(BigInteger , BigInteger);
+BigInteger subtract(BigInteger, BigInteger);
+BigInteger multiply(BigInteger, BigInteger);
+
 
 
 BigInteger init(){
@@ -117,46 +125,79 @@ int check_max(BigInteger A, BigInteger B){
 
 BigInteger subtract( BigInteger A, BigInteger B){ // const BigIntegerData left, const BigIntegerData right )
 
-	int boo = check_max(A, B);
-	if(!boo){
+	//int boo = check_max(A, B);
+	/*if(!boo){
 		printf("Invalid Subtraction\n");
-	}	
-
-  	BigInteger C = init();
-
-  	int i = 0 , diff;
-
-  	int borrow = 0;
-
-  	for(i = 0; i < N; i++) {
-
-  		diff  = A.digits[i] - B.digits[i] + borrow;
-
-  		//printf("%d",diff);
-  		if(diff < 0){
-  			diff+=BASE;
-
-  			borrow = 1;
-
-  		}else{
-
-  			borrow = 0;
-
-  		}
-
-  		C.digits[i] = diff;
+	}*/	
+	int sign;
+	BigInteger temp;
+	BigInteger C = init();
 
 
-  	}
+	if((A.sign == POSITIVE && B.sign == POSITIVE) ||  A.sign == NEGATIVE && B.sign == NEGATIVE){
 
-  	rep(i, N)
-		if(C.digits[N-1-i]!=0)
-			break;
-	C.length = N - i;
+		int boo = check_max(A, B);
+
+
+		sign = A.sign;
+		if(!boo){
+			// swapping (A, B)
+			temp = A;
+
+			B = A;
+
+			A = temp;
+
+			sign = B.sign;
+
+
+		}
+//		printf("hello\n");
+	  	
+	  	int i = 0 , diff;
+
+	  	int borrow = 0;
+
+	  	for(i = 0; i < N; i++) {
+
+	  		diff  = A.digits[i] - B.digits[i] - borrow;
+
+	  		//printf("%d",diff);
+	  		if(diff < 0){
+	  			diff+=BASE;
+
+	  			borrow = 1;
+
+	  		}else{
+
+	  			borrow = 0;
+
+	  		}
+
+	  		C.digits[i] = diff;
+
+
+	  	}
+
+	  	rep(i, N)
+			if(C.digits[N-1-i]!=0)
+				break;
+		C.length = N - i;
+		
+		if(N-i == 0)
+			C.length = 1;
+
+		C.sign = sign;
 	
-	if(N-i == 0)
-		C.length = 1;
+	}else if(A.sign == POSITIVE && B.sign == NEGATIVE){
+		B.sign = POSITIVE;
+		C = add(A, B);
+	}else{
+		B.sign = NEGATIVE;
 
+
+		C = add(A,B);
+	}
     return C;
 }
 
@@ -182,8 +223,12 @@ BigInteger add (BigInteger A, BigInteger B) {
 	int	i, carry, sum;
 
 	BigInteger C = init();
-	/* no carry yet */
 
+
+
+	if ((A.sign == POSITIVE && B.sign == POSITIVE) || (A.sign == NEGATIVE && B.sign == NEGATIVE)) {
+	/* no carry yet */
+	
 	carry = 0;
 
 	/* go from least to most significant digit */
@@ -219,8 +264,17 @@ BigInteger add (BigInteger A, BigInteger B) {
 			break;
 
 	C.length = N - i;
-	//rep(i, N)
 
+	}
+
+	else{
+			C = subtract(A , B);
+			printf("subtract\n");
+			//C =init();
+	
+	}
+
+	C.sign = A.sign;
 	return C;
 	/* if we get to the end and still have a carry, we don't have
 	 * anywhere to put it, so panic! 
@@ -231,13 +285,14 @@ BigInteger add (BigInteger A, BigInteger B) {
 void print_the_integer(BigInteger A){
 	int i;
 	rep(i, A.length){
-		printf("%d",A.digits[i]);
+		printf("%d",A.digits[A.length - 1 - i]);
 	}
 	printf("\n");
 }
 
 void print_full_integer(BigInteger A){
 	int i;
+	A.sign==POSITIVE?printf("+"):printf("-");
 	rep(i, 128){
 		printf("%d",A.digits[i]);
 	}
@@ -268,6 +323,7 @@ BigInteger multiply (BigInteger A, BigInteger B) {
 
 		C = add (C, P);
 	}
+	C.sign = A.sign==B.sign ?  1 : 0;
 
 	return C;
 }
@@ -299,7 +355,7 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 
 	
 
-	printf("m %d n  %d\n", m+1 , n+1 );
+//	printf("m %d n  %d\n", m+1 , n+1 );
 	n++;
 	k=0;
 	l=0;
@@ -326,36 +382,60 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 }
 	 else{
 	 	int div_first_digit, qt;
-	 	printf("iamhere\n");
+	 	//printf("iamhere\n");
 	 	BigInteger I = invert(A,1);
-	 	print_full_integer(I);
-	 	for(i=0;i<=n-m;i++){
+//	 	print_full_integer(I);
+	 	for(i=0;i<n-m;i++){
+	 		qt = 0;
 	 		P = init();
 	 		R = init();
 	 		REM = init();
 	 		T = init();
-	 		memcpy(P.digits, I.digits+i, sizeof(int)*(m+1));
-	 		P.length = m+1;
+	 		memcpy(P.digits, I.digits+i, sizeof(int)*(m+2));
+
+	 		P.length = m+2;
 	 		//printf("%d\n", P.length);
 	 		R = invert(P, 0);
+//	 		printf("R  \t");
+//	 		print_full_integer(R);
+
 	 		// ------added at graphics lab----------------
-	 		num = P.digits[m]*10 + P.digits[m-1];
-			div_first_digit = B.digits[m-1];
+	 		num = P.digits[m] + P.digits[m-1]*10;
+	 	//	printf("num =%d\n",num);
+	 	//	printf("%d\n", m );
+			div_first_digit = B.digits[m];
+		//	print_full_integer(B);
+		//	printf("first_digit %d\n",div_first_digit);
 			qt = num / div_first_digit;
+		//	printf("qt %d\n",qt );
 			BigInteger QT = init();
 			QT.digits[0] = qt; 
+		//	print_full_integer(QT);
 			T = multiply(B, QT);
+		//	print_full_integer(T);
 			while(!check_max(R , T)){						
 				T = subtract(T, B);
 				qt-=1;
 			}
+		//	printf("qt %d\n", qt);	
+		//	print_full_integer(T);
+	//		print_full_integer(R);
+
 			C[0].digits[k++] = qt;
+		//	print_full_integer(C[0]);
 			REM = subtract(R,T);			
-			print_full_integer(REM);			
-			// ------- not sure whether it will work or not----------- 			
-	 		//print_full_integer(R);
+			//print_full_integer(REM);
+			rep(j, m+1){
+				I.digits[i+1+j] = REM.digits[m-j]; 
+			}
+//			print_full_integer(I);
+//			print_full_integer(REM);			
+	// ------- not sure whether it will work or not----------- 			
+	 	//	print_full_integer(R);
 
 	 	}	
+	 	print_full_integer(C[0]);
+	 	print_full_integer(REM);
 
 
 
@@ -509,14 +589,14 @@ int main(int argc , char *argv[]){
 	BigInteger qr[2];
 	qr[0] = init();
 	qr[1] = init();
+	result = init();
 	BigInteger d1, d2;
 	int len_d1, len_d2, len_r, len_q;
 	int dig1_int[N], dig2_int[N];
-	int sign_dig1=1,sign_dig2=1;
+	
+	char dig1[] = "425987";
 
-	char dig1[] = "123456789";
-
-	char dig2[] = "12";
+	char dig2[] = "56";
 
 	len_d1 = strlen(dig1);
 
@@ -537,8 +617,8 @@ int main(int argc , char *argv[]){
 		dig2_int[i] = dig2[len_d2-i-1] - '0';
 	}
 
-	d1.sign = sign_dig1;
-	d1.sign = sign_dig2;
+	d1.sign = POSITIVE;
+	d2.sign = POSITIVE;
 
 	d1.length = len_d1;
 	d2.length = len_d2;
@@ -546,9 +626,10 @@ int main(int argc , char *argv[]){
 	memcpy(d1.digits , dig1_int, N*sizeof(int));
 	memcpy(d2.digits , dig2_int, N*sizeof(int));
 
-	//result = add(d1, d2);
-	result = multiply(d1, d2);
-	
+//	result = add(d1, d2);
+//	print_full_integer(result);
+	//result = multiply(d1, d2);
+	//print_full_integer(result);
 	//result = subtract(d1, d2);
 	//rep(i, N)
 	//	result.digits[i]=0;
@@ -560,7 +641,7 @@ int main(int argc , char *argv[]){
 */
 
 
-	//knuth_divide(d1, d2, qr);
+	knuth_divide(d1, d2, qr);
 /*	result = qr[0];
 	//printf("%d\n",qr[0].digits[0] );
 	len_q = result.length;
