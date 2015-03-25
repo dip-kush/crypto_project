@@ -24,6 +24,8 @@ struct BigInteger{
 
 typedef struct BigInteger BigInteger;
 
+BigInteger stack[10000];
+
 BigInteger add(BigInteger , BigInteger);
 BigInteger subtract(BigInteger, BigInteger);
 BigInteger multiply(BigInteger, BigInteger);
@@ -141,18 +143,21 @@ BigInteger subtract( BigInteger A, BigInteger B){ // const BigIntegerData left, 
 
 		sign = A.sign;
 		if(!boo){
+			// /printf("i am here\n");
 			// swapping (A, B)
 			temp = A;
 
-			B = A;
+			A = B;
 
-			A = temp;
+			B = temp;
 
-			sign = B.sign;
+			sign = B.sign==POSITIVE?NEGATIVE:POSITIVE;
 
 
 		}
 //		printf("hello\n");
+//		print_the_integer(A);
+//		print_the_integer(B);
 	  	
 	  	int i = 0 , diff;
 
@@ -268,8 +273,30 @@ BigInteger add (BigInteger A, BigInteger B) {
 	}
 
 	else{
-			C = subtract(A , B);
-			printf("subtract\n");
+			int boo = check_max(A, B);
+
+			BigInteger TEMP = init();
+
+			
+			if(!boo && A.sign==POSITIVE){
+				B.sign = POSITIVE;
+				C = subtract(B, A);
+				C.sign = NEGATIVE;
+			}
+			else if(!boo && A.sign == NEGATIVE){
+				A.sign = POSITIVE;
+				C = subtract(B, A);		
+			}
+			else if(boo && A.sign == POSITIVE){
+				B.sign = POSITIVE;
+				C = subtract(A, B);
+			}else{
+				A.sign = POSITIVE;
+				C = subtract(A, B);
+				C.sign = NEGATIVE;
+			}
+			return C;
+			//printf("subtract\n");
 			//C =init();
 	
 	}
@@ -284,6 +311,7 @@ BigInteger add (BigInteger A, BigInteger B) {
 
 void print_the_integer(BigInteger A){
 	int i;
+	A.sign==POSITIVE ? printf("+") : printf("-") ;
 	rep(i, A.length){
 		printf("%d",A.digits[A.length - 1 - i]);
 	}
@@ -461,12 +489,15 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 
 	 }
 
-		printf(" Quotient \n"); 	
+
+
+/*		printf(" Quotient \n"); 	
 	 	print_the_integer(C[0]);
 	 	printf(" Remainder \n");
 	 	print_the_integer(C[1]);
-	
-
+	 	print_the_integer(A);
+	 	print_the_integer(B);
+*/
 
 
 	//return C;
@@ -571,6 +602,103 @@ int enhanced_euclid(int p0, int p1){
 
 }
 
+int check_zero(BigInteger A){
+	int i;
+	rep(i,N){
+		if(A.digits[i]!=0)
+			return 1;
+	}
+	return 0;
+
+}
+
+int check_greater_one(BigInteger A){
+	int i;
+	rep(i,N){
+		if(A.digits[i]>1)
+			return 1;
+	}
+	return 0;
+
+}
+
+BigInteger extended_euclid(BigInteger A, BigInteger B){
+	BigInteger T = init();
+	BigInteger NT = init();
+	BigInteger R = init();
+	BigInteger NR = init();
+	BigInteger Q = init();
+	BigInteger TMP = init();
+	BigInteger DUP_A = init();
+	BigInteger C[2];
+	BigInteger mul;
+	mul = init();
+	C[0] = C[1] = init();
+	if(B.sign == NEGATIVE){
+		printf("b is negative\n");
+		B.sign = POSITIVE;
+	}
+
+	if(A.sign == NEGATIVE){
+		printf("a is negative\n");
+		DUP_A = A;
+		DUP_A.sign = POSITIVE;
+		knuth_divide(DUP_A, B, C);
+		A = subtract(B, C[1]);
+		//A = subtract(B, )
+	}
+	NT.digits[0] =  1; 
+	//printf("NT\n");
+	//print_the_integer(NT);
+	C[0] = C[1] = init();
+	R = B;
+	//printf("R\n");
+	//print_the_integer(R);
+	knuth_divide(A, B, C);
+
+	NR = C[1];
+	//printf("NR\n");
+	//print_the_integer(NR);
+	while(check_zero(NR)){
+		knuth_divide(R, NR, C);
+		//printf("C[0]\n");
+		//print_the_integer(C[0]);
+		TMP = NT; 
+		mul = multiply(C[0], NT);
+		//printf("mul\n");
+		//		print_the_integer(mul);
+	
+
+		NT = subtract(T, multiply(C[0],NT));
+		T = TMP;
+		//printf("T \n");
+		//print_the_integer(T);
+		//printf("NT\n");
+		//print_the_integer(NT);
+		
+
+		TMP = NR;
+		NR = subtract(R, multiply(C[0], NR));
+		R = TMP;
+		//printf("R\n");
+		//print_the_integer(R);
+		///printf("NR\n");
+		//print_the_integer(NR);
+	}
+	if(check_greater_one(R)){
+		printf("No MMI exist\n");
+	}
+//	printf("t sign %d", T.sign);
+	if(T.sign == NEGATIVE){
+	//	printf("sign %d\n",B.sign);
+		T = add(T, B);
+	//	printf("T\n");
+	//	print_the_integer(T);
+	}
+	return T;
+
+
+}
 
 
 int mul_inv(int a, int b)
@@ -579,11 +707,15 @@ int mul_inv(int a, int b)
         if (b < 0) b = -b;
         if (a < 0) a = b - (-a % b);
         t = 0;  nt = 1;  r = b;  nr = a % b;
+       	//printf("r  %d nr  %d\n", r, nr);
         while (nr != 0) {
           q = r/nr;
+          //printf(" q %d\n", q );
           tmp = nt;  nt = t - q*nt;  t = tmp;
+          //printf("t %d nt %d\n", t, nt );
           //  printf("%d %d %d\n", nt, t, q );
           tmp = nr;  nr = r - q*nr;  r = tmp;
+          //printf("r %d nr %d \n",r, nr );
            // printf("%d %d %d\n", nr, r, q );
         }
         if (r > 1) return -1;  /* No inverse */
@@ -602,7 +734,7 @@ int * intdup(int const * src, int *dest, size_t len)
 int main(int argc , char *argv[]){
 
 
-// 	printf("%d\n", mul_inv(4 , 5));
+ 	printf("%d\n", mul_inv(2023 , 1993));
 //	printf("%d\n", enhanced_euclid(5, 9));
 //	printf("%d\n", enhanced_euclid(5, 4));
 
@@ -618,9 +750,9 @@ int main(int argc , char *argv[]){
 	int len_d1, len_d2, len_r, len_q;
 	int dig1_int[N], dig2_int[N];
 	
-	char dig1[] = "454545454121212121212121254545454878787";
+	char dig1[] = "2023";
 
-	char dig2[] = "1";
+	char dig2[] = "1993";
 
 /*	char dig1[] = "124578";
 	char dig2[] = "45";
@@ -655,8 +787,9 @@ int main(int argc , char *argv[]){
 //	result = add(d1, d2);
 //	print_full_integer(result);
 	//result = multiply(d1, d2);
-	//print_full_integer(result);
-	//result = subtract(d1, d2);
+//	print_the_integer(result);
+//	result = subtract(d1, d2);
+//	print_the_integer(result);
 	//rep(i, N)
 	//	result.digits[i]=0;
 	/*len_r = result.length;
@@ -666,8 +799,10 @@ int main(int argc , char *argv[]){
 	printf("%d\n", result.length );
 */
 
-
-	knuth_divide(d1, d2, qr);
+	result = extended_euclid(d1, d2);
+	printf("inverse\n");
+	print_the_integer(result);
+	//knuth_divide(d1, d2, qr);
 /*	result = qr[0];
 	//printf("%d\n",qr[0].digits[0] );
 	len_q = result.length;
