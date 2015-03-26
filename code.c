@@ -29,7 +29,7 @@ BigInteger stack[10000];
 BigInteger add(BigInteger , BigInteger);
 BigInteger subtract(BigInteger, BigInteger);
 BigInteger multiply(BigInteger, BigInteger);
-
+BigInteger *knuth_divide(BigInteger, BigInteger, BigInteger *);
 
 
 BigInteger init(){
@@ -352,6 +352,8 @@ BigInteger multiply (BigInteger A, BigInteger B) {
 		C = add (C, P);
 	}
 	C.sign = A.sign==B.sign ?  1 : 0;
+	if(C.length==0)
+		C.length = 1;
 
 	return C;
 }
@@ -365,6 +367,19 @@ int find_len(BigInteger A){
 		}		
 	}
 }
+void shift_right (int A[], int n) {
+	int	i;
+
+	/* going from left to right, move everything over to the
+	 * left n spaces
+	 */
+	for (i=0; i < N-n; i++) A[i] = A[i+n];
+
+	/* fill the last n digits with zeros */
+
+	while (i < N-1) A[i--] = 0;
+}
+
 
 BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	int i,j,m,n,num,k=0,l;
@@ -408,22 +423,46 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 		 }
 		 else{
 		 	C[1].digits[0] = A.digits[0];
-		 }   	
-		 C[0].length = k;
+		 }
+		 
+	/*	 k--;
+		while(C[1].digits[k]==0)
+		 	k--;
+*/
+
+		 i=0;
+		 if(!check_zero(C[0]))
+			 while(C[0].digits[i]==0){
+			 	i++;
+			 }
+		 //printf("i %d\n",i);
+		 shift_right(C[0].digits, i);
+ 	 	 C[0].length = k-i;
+
+		 /*i=	0;
+		 while(C[0].digits[i]==0)
+		 	i++;
+*/		//print_full_integer(C[0]);
 		 C[0] = invert(C[0], 0);
+		 //C[0].length = k - i;
+
  
 	 }
-	 else if(m>n){
+	 else if(m>=n){
+	 	//printf("i am here\n");
 	 	for(i=n-1;i>=0;i--)
 	 		C[1].digits[l++]=A.digits[i];
 	 	C[1].length = l;	
+	 	C[1] = invert(C[1], 0);
 	 }
 	 else{
+	 	//printf("i am here\n");
 	 	int div_first_digit, qt;
 	 	//printf("m ==   %d\n",m );
 	 	BigInteger I = invert(A,1);
 //	 	print_full_integer(I);
 	 	for(i=0;i<n-m;i++){
+	 		//printf("i am stuck\n");
 	 		qt = 0;
 	 		P = init();
 	 		R = init();
@@ -454,6 +493,7 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 			T = multiply(B, QT);
 		//	print_full_integer(T);
 			while(!check_max(R , T)){						
+		//		printf("i am\n");
 				T = subtract(T, B);
 				qt-=1;
 			}
@@ -477,9 +517,28 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 
 	 //	print_full_integer(C[0]);
  	 	//C[0] = invert(C[0], 0);
- 	 	C[0].length = k;
- 	 	C[0] = invert(C[0], 0);
- 	 	
+		 i=0;
+		 if(!check_zero(C[0])){
+		 	while(C[0].digits[i]==0){
+		 		if(i==N-1){
+
+		 			i=0;
+		 			break;
+		 		}
+		 		i++;
+		 	}
+		 }	
+		 //printf("i %d\n",i);
+		 shift_right(C[0].digits, i);
+ 	 	 C[0].length = k-i;
+ 	 	 //print_full_integer(C[0]);
+
+
+
+ 	 	 C[0] = invert(C[0], 0);
+ 	 	 //C[0].length = k - i;
+
+ 	 	 //print_full_integer(C[0]);
 	 	//print_full_integer(C[0]);
 	 	//C[0].length = find_len(C[0]);
 	 	C[1] = REM;
@@ -495,9 +554,9 @@ BigInteger *knuth_divide(BigInteger A, BigInteger B, BigInteger C[]){
 	 	print_the_integer(C[0]);
 	 	printf(" Remainder \n");
 	 	print_the_integer(C[1]);
-	 	print_the_integer(A);
-	 	print_the_integer(B);
-*/
+*///	 	print_the_integer(A);
+//	 	print_the_integer(B);
+
 
 
 	//return C;
@@ -555,6 +614,65 @@ void shift_left (int A[], int n) {
 	/* fill the last n digits with zeros */
 
 	while (i >= 0) A[i--] = 0;
+}
+
+int check_one(BigInteger A){
+	int i;
+	for(i=N-1;i>=1;i--)
+		if(A.digits>1)
+			return 0;
+	if(A.digits[0]==1)
+		return 1;
+	else
+		return 0;
+}
+
+BigInteger nea(BigInteger p0, BigInteger p1){
+	BigInteger l = init();
+	BigInteger m = init();
+	BigInteger s = init();
+	BigInteger T[2];
+	T[0] = T[1] = init();
+	int tos = 0, flag = 0 , i, b = 0;
+	l = p0;
+	m = p1;
+	tos = 0;
+	do {
+		knuth_divide(l, m, T);
+		stack[tos] = init();
+		stack[tos++] = T[0];
+		s = subtract(l, multiply(m, T[0]));
+		b = 1 - b;
+		l = m;
+		m = s;
+		if(check_zero(s)){
+			flag=1;
+			break;
+		}
+
+	} while(check_one(s));
+
+	if(flag){
+		printf("inverse doesnt exist\n");
+	}
+
+	if(b==0){
+		m = init();
+		m.digits[0] = 1;
+	}else{
+		m = init();
+		m.digits[0] = 1;
+	}
+	s = init();
+
+	for(i=tos-1;i>=0;i--){
+		l = add(multiply(m, stack[i]),s);
+		s = m;
+		m = l;
+
+	}
+	return l;
+
 }
 
 int enhanced_euclid(int p0, int p1){
@@ -652,17 +770,18 @@ BigInteger extended_euclid(BigInteger A, BigInteger B){
 	//print_the_integer(NT);
 	C[0] = C[1] = init();
 	R = B;
-	//printf("R\n");
-	//print_the_integer(R);
+//	printf("R\n");
+//	print_the_integer(R);
 	knuth_divide(A, B, C);
-
+//	print_full_integer(C[1]);
 	NR = C[1];
-	//printf("NR\n");
-	//print_the_integer(NR);
+//	printf("NR\n");
+//	print_the_integer(NR);
 	while(check_zero(NR)){
+		//printf("i am stuck\n");
 		knuth_divide(R, NR, C);
-		//printf("C[0]\n");
-		//print_the_integer(C[0]);
+//		printf("C[0]\n");
+//		print_the_integer(C[0]);
 		TMP = NT; 
 		mul = multiply(C[0], NT);
 		//printf("mul\n");
@@ -707,15 +826,15 @@ int mul_inv(int a, int b)
         if (b < 0) b = -b;
         if (a < 0) a = b - (-a % b);
         t = 0;  nt = 1;  r = b;  nr = a % b;
-       	//printf("r  %d nr  %d\n", r, nr);
+       	printf("r  %d nr  %d\n", r, nr);
         while (nr != 0) {
           q = r/nr;
-          //printf(" q %d\n", q );
+          printf(" q %d\n", q );
           tmp = nt;  nt = t - q*nt;  t = tmp;
-          //printf("t %d nt %d\n", t, nt );
-          //  printf("%d %d %d\n", nt, t, q );
+          printf("t %d nt %d\n", t, nt );
+            //printf("%d %d %d\n", nt, t, q );
           tmp = nr;  nr = r - q*nr;  r = tmp;
-          //printf("r %d nr %d \n",r, nr );
+          printf("r %d nr %d \n",r, nr );
            // printf("%d %d %d\n", nr, r, q );
         }
         if (r > 1) return -1;  /* No inverse */
@@ -734,7 +853,7 @@ int * intdup(int const * src, int *dest, size_t len)
 int main(int argc , char *argv[]){
 
 
- 	printf("%d\n", mul_inv(2023 , 1993));
+// 	printf("the inverse is %d\n", mul_inv(23 , 113));
 //	printf("%d\n", enhanced_euclid(5, 9));
 //	printf("%d\n", enhanced_euclid(5, 4));
 
@@ -750,9 +869,9 @@ int main(int argc , char *argv[]){
 	int len_d1, len_d2, len_r, len_q;
 	int dig1_int[N], dig2_int[N];
 	
-	char dig1[] = "2023";
+	char dig1[] = "671998030559713968361666935769";
 
-	char dig2[] = "1993";
+	char dig2[] = "2425967623052370772757633156976982469681";
 
 /*	char dig1[] = "124578";
 	char dig2[] = "45";
@@ -784,11 +903,12 @@ int main(int argc , char *argv[]){
 	memcpy(d1.digits , dig1_int, N*sizeof(int));
 	memcpy(d2.digits , dig2_int, N*sizeof(int));
 
-//	result = add(d1, d2);
-//	print_full_integer(result);
-	//result = multiply(d1, d2);
-//	print_the_integer(result);
 //	result = subtract(d1, d2);
+//	print_full_integer(result);
+//	BigInteger d3 = init();
+//	result = knuth_divide(d1, d2, qr);
+//	print_the_integer(result);
+	//result = subtract(d1, d2);
 //	print_the_integer(result);
 	//rep(i, N)
 	//	result.digits[i]=0;
@@ -803,6 +923,7 @@ int main(int argc , char *argv[]){
 	printf("inverse\n");
 	print_the_integer(result);
 	//knuth_divide(d1, d2, qr);
+//	printf("%d\n",qr[1].length );
 /*	result = qr[0];
 	//printf("%d\n",qr[0].digits[0] );
 	len_q = result.length;
