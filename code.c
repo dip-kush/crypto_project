@@ -6,7 +6,15 @@
 #include<time.h>
 
 #define BASE 10
-#define N 128
+#define N 156
+#define LIMIT 1000000
+#define PRIMES 1000000
+
+int count;
+
+int sieve[LIMIT];
+
+int primes[PRIMES];
 
 #define rep(i,n) for(i=0;i<n;i++)
 
@@ -693,12 +701,15 @@ BigInteger nea(BigInteger p0, BigInteger p1){
 	}
 	s = init();
 
+	printf("tos %d\n",tos);
 	for(i=tos-1;i>=0;i--){
 		mul = init();
 		//printf("stack \n");
 		//print_the_integer(stack[i]);
 		//printf("mul \n");
 		mul = multiply(m, stack[i]);
+				//printf("mul length %d\n",mul.length );
+
 		//print_the_integer(mul);
 		l = add(mul, s);
 		//printf("l \n");
@@ -754,13 +765,13 @@ int enhanced_euclid(int p0, int p1){
 		m=-1;
 	}
 	s=0;
-//	printf("m %d \n",m );
+	//	printf("m %d \n",m );
 	for(i=tos-1;i>=0;i--){
 	
 		l = m*stack[i]+s;
 		s=m;
 		m=l;
-//		printf(" s %d   m %d   stack %d \n",s,m, stack[i]);
+		//		printf(" s %d   m %d   stack %d \n",s,m, stack[i]);
 	}
 	return l;	
 
@@ -887,9 +898,105 @@ int * intdup(int const * src, int *dest, size_t len)
    return p;
 }
 
+void store_prime(){
+	int i,j;
+
+	rep(i, LIMIT){
+		sieve[i]=i;
+	}
+
+	sieve[0]=sieve[1]=0;
+	for(i=0;i<=sqrt(LIMIT);i++){
+		if(sieve[i]){
+//			printf("djfkdjf\n");
+				for(j=sieve[i]*2;j<LIMIT;j+=sieve[i]){
+					//printf("i amd herer\n");
+					sieve[j] = 0;
+				}
+		}
+	}
+
+	count = 0;
+	for(i=0;i<LIMIT && count<PRIMES;i++){
+		if(sieve[i]){
+			primes[count++] = sieve[i];
+		}
+	}
+
+   	//rep(i, count){
+	//	printf("%d\n",primes[i] );
+	//}
+
+
+}
+
+int gcd(int a, int b)
+{
+    int t;
+    while (b)
+    {
+        t = a;
+        a = b;
+        b = t%b;
+    }
+    return a;
+}
+
+
+
+int power(int a, int b, int MOD)
+{
+    long long x=1,y=a;
+    while(b > 0)
+    {
+        if(b%2 == 1)
+        {
+            x=(x*y);
+            if(x>MOD) x%=MOD;
+        }
+        y = (y*y);
+        if(y>MOD) y%=MOD;
+        b /= 2;
+    }
+    return x;
+}
+
+
+
+void find_euler_totient(){
+	int n,i,result,flag=0,g,a=10;
+	long long ans;
+	scanf("%d",&n);
+	result = n;	
+//	int result=n;
+	for(i=0;i<=n && i<count;i++){
+//			if(n==0)
+//				printf("got zero\n");
+			if(n%primes[i]==0){
+				flag=1;
+//				printf("%d\n",primes[i] );
+				result = (result*(primes[i]-1))/primes[i];
+			}
+	}
+	if(!flag)
+		result--;
+
+	printf("totient %d\n", result );
+	g = gcd(a, n);
+	if(g==1){
+		ans = power(a, result-1, n);
+		printf("%lld\n",ans );
+	}else{
+		printf("inverse doenn't exist\n");
+	}
+
+}
+
 int main(int argc , char *argv[]){
 
 	time_t start_time , end_time, elapsed;
+	store_prime();
+	find_euler_totient();
 // 	printf("the inverse is %d\n", mul_inv(23 , 113));
 	//printf("the inverse is %d\n", enhanced_euclid(113, 23));
 //	printf("the inverse is%d\n", enhanced_euclid(5, 4));
@@ -907,9 +1014,11 @@ int main(int argc , char *argv[]){
 	int len_d1, len_d2, len_r, len_q;
 	int dig1_int[N], dig2_int[N];
 	
-	char dig2[] = "622288097498926496141095869268883999563096063592498055290461";
+	char dig1[100];
+	char dig2[100];
+//	scanf("%s", dig1);
 
-	char dig1[] = "22953686867719691230002707821868552601124472329079";
+//	scanf("%s",dig2);
 
 /*	char dig1[] = "124578";
 	char dig2[] = "45";
@@ -941,8 +1050,8 @@ int main(int argc , char *argv[]){
 	memcpy(d1.digits , dig1_int, N*sizeof(int));
 	memcpy(d2.digits , dig2_int, N*sizeof(int));
 
-//	result = subtract(d1, d2);
-//	print_full_integer(result);
+//	result = add(d1, d2);
+//	print_the_integer(result);
 //	BigInteger d3 = init();
 //	result = knuth_divide(d1, d2, qr);
 //	print_the_integer(result);
@@ -957,12 +1066,17 @@ int main(int argc , char *argv[]){
 	printf("%d\n", result.length );
 */
 
-	//result = extended_euclid(d2, d1);
-	//printf("inverse\n");
-	//print_the_integer(result);
-	result = nea(d1, d2);
-	printf("inverse\n");
-	print_the_integer(result);
+//	result = extended_euclid(d1, d2);
+//	printf("inverse\n");
+//	print_the_integer(result);
+// 	result = nea(d2, d1);
+//	printf("inverse\n");
+//	print_the_integer(result);
+//	printf("time=%.3lf sec.\n", (double) (clock())/CLOCKS_PER_SEC);
+	
+//	printf("time=%.3lf sec.\n", (double) (clock())/CLOCKS_PER_SEC);
+
+
 	//time(&end_time);
 //printf("Finished in about %.4f seconds. \n", difftime(end_time, start_time));
 	//knuth_divide(d1, d2, qr);
